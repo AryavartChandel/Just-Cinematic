@@ -212,7 +212,7 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">My Notes</p>
                       {!isAdmin && (
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600">🔒 This tale was written beyond your reach, my friend</p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600"> </p>
                       )}
                     </div>
 
