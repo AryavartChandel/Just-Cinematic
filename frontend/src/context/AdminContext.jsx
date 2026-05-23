@@ -39,8 +39,8 @@ export function AdminProvider({ children }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Cinephile</p>
-              <h2 className="mt-1 text-xl font-black text-white">Aryavart lvl Access</h2>
+              <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Are u an OG Cinephile?</p>
+              <h2 className="mt-1 text-xl font-black text-white">Aryavart Level Access</h2>
             </div>
 
             <input
