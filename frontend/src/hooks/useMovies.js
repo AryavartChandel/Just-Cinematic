@@ -6,6 +6,7 @@ const defaultFilters = {
   genre: 'all',
   type: 'all',
   actor: 'all',
+  sortDir: 'desc',
 }
 
 const getDefaultSort = (mode) => {
@@ -13,15 +14,20 @@ const getDefaultSort = (mode) => {
   return 'createdAt'
 }
 
-const sortMovies = (movies, sort) => {
+const sortMovies = (movies, sort, sortDir) => {
   const sorted = [...movies]
-  if (sort === 'title') return sorted.sort((a, b) => a.title.localeCompare(b.title))
-  if (sort === 'year') return sorted.sort((a, b) => (b.year || 0) - (a.year || 0))
-  if (sort === 'imdbRating') return sorted.sort((a, b) => (b.imdbRating || 0) - (a.imdbRating || 0))
-  if (sort === 'personalRating') return sorted.sort((a, b) => (b.personalRating || 0) - (a.personalRating || 0))
-  if (sort === 'watchedAt') return sorted.sort((a, b) => new Date(b.watchedAt || 0) - new Date(a.watchedAt || 0))
-  // createdAt — newest first
-  return sorted.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+  const dir = sortDir === 'asc' ? 1 : -1
+
+  if (sort === 'title') return sorted.sort((a, b) => dir * a.title.localeCompare(b.title))
+  if (sort === 'year') return sorted.sort((a, b) => dir * ((a.year || 0) - (b.year || 0)))
+  if (sort === 'imdbRating') return sorted.sort((a, b) => dir * ((a.imdbRating || 0) - (b.imdbRating || 0)))
+  if (sort === 'watchedAt') return sorted.sort((a, b) => dir * (new Date(a.watchedAt || 0) - new Date(b.watchedAt || 0)))
+  if (sort === 'personalRating') {
+    const order = { Masterpiece: 5, Great: 4, Good: 3, Timepass: 2, Skip: 1, '': 0 }
+    return sorted.sort((a, b) => dir * ((order[a.personalRating] || 0) - (order[b.personalRating] || 0)))
+  }
+  // createdAt
+  return sorted.sort((a, b) => dir * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)))
 }
 
 export const useMovies = (initialStatus = 'all') => {
@@ -118,7 +124,7 @@ const genres = useMemo(() => {
       return matchesSearch && matchesGenre && matchesActor
     })
 
-    return sortMovies(filtered, filters.sort)
+    return sortMovies(filtered, filters.sort, filters.sortDir)
   }, [movies, filters, initialStatus])
 
   const stats = useMemo(

@@ -129,8 +129,17 @@ function CinemaPage({ mode = 'watchlist' }) {
                 ? <option value="createdAt">Date Added</option>
                 : <option value="watchedAt">Watched On</option>
               }
+              {!isWatchlist && <option value="personalRating">Verdict</option>}
             </select>
-
+              <button
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, sortDir: prev.sortDir === 'asc' ? 'desc' : 'asc' }))
+                }
+                className="h-8 w-8 rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white transition text-xs"
+                title={filters.sortDir === 'asc' ? 'Ascending' : 'Descending'}
+              >
+                {filters.sortDir === 'asc' ? '↑' : '↓'}
+              </button>
             <div className="hidden sm:block h-5 w-px bg-zinc-800" />
 
             <button
