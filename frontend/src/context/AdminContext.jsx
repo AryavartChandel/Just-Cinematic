@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react'
 
 const AdminContext = createContext(null)
 
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'cinematicaru'
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'potatotopato'
 
 export function AdminProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false)
@@ -39,8 +39,8 @@ export function AdminProvider({ children }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Reelkeeper</p>
-              <h2 className="mt-1 text-xl font-black text-white">Admin Access</h2>
+              <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Cinephile</p>
+              <h2 className="mt-1 text-xl font-black text-white">Aryavart lvl Access</h2>
             </div>
 
             <input
