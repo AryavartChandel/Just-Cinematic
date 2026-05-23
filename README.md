@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # My Cinema
 
 Personal full-stack movie and series tracker built with React, Vite, Express, and MongoDB.
@@ -47,3 +48,7 @@ The backend starts even without MongoDB, but movie database routes need `MONGO_U
 - Genres, actors, year, poster, and notes
 - API routes for create, read, update, and delete
 - React UI with search, filters, sorting, watchlist, watched page, and sample data fallback
+=======
+# Just-Cinematic
+My personal cinema universe. Every film I've loved, every series I've lost sleep over, every title I'm counting down to — all in one place. Not a recommendation engine. Not an algorithm. Just cinematic.
+>>>>>>> 815832f7c3ff7e364122482f4499e8cc05ff30e9
