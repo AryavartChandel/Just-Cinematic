@@ -217,12 +217,12 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                     </div>
 
                     {/* VERDICT + WATCHED ON */}
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 
-                      {/* VERDICT LEFT */}
+                      {/* VERDICT */}
                       <div className="space-y-1.5">
                         <label className="text-xs uppercase tracking-[0.2em] text-zinc-600">My Verdict</label>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-row flex-wrap gap-2">
                           {VERDICTS.map(({ label, active, inactive }) => (
                             <button
                               key={label}
@@ -241,7 +241,7 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                       </div>
 
                       {/* WATCHED ON RIGHT */}
-                      <div className="space-y-1.5 shrink-0">
+                      <div className="space-y-1.5 sm:shrink-0">
                         <label className="text-xs uppercase tracking-[0.2em] text-zinc-600">Watched On</label>
                         <div className="flex gap-1.5">
                           <select
