@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createMovie } from '../services/movieService'
-
-
+import { useAdmin } from '../context/AdminContext'
 
 import {
   searchMovies,
@@ -15,6 +14,7 @@ import { GENRES } from '../data/genres'
 import { genreColors, defaultGenreTheme } from '../utils/genreColors'
 
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
+const LOCK_MSG = '🔒 You are not worthy enough Thor..'
 
 const initialForm = {
   tmdbId: '',
@@ -31,6 +31,7 @@ const initialForm = {
 }
 
 function AddMovieForm({ onMovieAdded }) {
+  const { isAdmin } = useAdmin()
   const [form, setForm] = useState(initialForm)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
@@ -102,7 +103,6 @@ function AddMovieForm({ onMovieAdded }) {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Switching type clears everything
   const handleTypeToggle = (type) => {
     setForm({ ...initialForm, type })
     setQuery('')
@@ -110,7 +110,6 @@ function AddMovieForm({ onMovieAdded }) {
     setSelectedItem(false)
   }
 
-  // Status is mutually exclusive — watched XOR watchlist
   const handleStatusChange = (status) => {
     setForm((prev) => ({
       ...prev,
@@ -121,6 +120,7 @@ function AddMovieForm({ onMovieAdded }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!isAdmin) { alert(LOCK_MSG); return }
     try {
       setLoading(true)
       const payload = {
@@ -304,7 +304,7 @@ function AddMovieForm({ onMovieAdded }) {
           value={form.personalRating}
           onChange={handleChange}
           disabled={!form.watched}
-  className="h-14 rounded-xl border border-zinc-800 bg-black px-5 text-white outline-none transition-all duration-300 focus:border-amber-400 disabled:opacity-25 disabled:cursor-not-allowed"
+          className="h-14 rounded-xl border border-zinc-800 bg-black px-5 text-white outline-none transition-all duration-300 focus:border-amber-400 disabled:opacity-25 disabled:cursor-not-allowed"
         >
           <option value="">Select Your Verdict</option>
           <option value="Masterpiece">Masterpiece</option>
@@ -320,7 +320,7 @@ function AddMovieForm({ onMovieAdded }) {
         <img src={form.poster} alt="Poster" className="h-64 rounded-xl object-cover shadow-2xl" />
       )}
 
-      {/* STATUS — mutually exclusive radio-style buttons */}
+      {/* STATUS */}
       <div className="space-y-2">
         <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">Status</p>
         <div className="flex gap-3">
@@ -349,15 +349,21 @@ function AddMovieForm({ onMovieAdded }) {
         </div>
       </div>
 
-      {/* SUBMIT */}
+      {/* SUBMIT — blocked for non-admins */}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-amber-400 px-5 py-4 font-black uppercase tracking-wider text-black transition hover:bg-amber-300"
+        className={`w-full rounded-xl px-5 py-4 font-black uppercase tracking-wider transition ${
+          isAdmin
+            ? 'bg-amber-400 text-black hover:bg-amber-300'
+            : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+        }`}
       >
         {loading
           ? `Adding ${isMovie ? 'Movie' : 'Series'}...`
-          : `Add ${isMovie ? 'Movie' : 'Series'}`}
+          : isAdmin
+            ? `Add ${isMovie ? 'Movie' : 'Series'}`
+            : `🔒 Add ${isMovie ? 'Movie' : 'Series'}`}
       </button>
     </form>
   )

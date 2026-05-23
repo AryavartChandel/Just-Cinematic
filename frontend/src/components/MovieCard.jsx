@@ -2,7 +2,6 @@ import { deleteMovie, toggleWatchStatus } from '../services/movieService'
 import { genreColors, defaultGenreTheme } from '../utils/genreColors'
 import { useAdmin } from '../context/AdminContext'
 
-// Hex colors for each genre — used for inline gradient styles
 const genreHex = {
   Action:             '#ef4444',
   Adventure:          '#10b981',
@@ -32,22 +31,20 @@ const getAccentStyle = (genres) => {
   if (!genres || genres.length === 0) {
     return { background: `linear-gradient(to right, ${defaultHex}, #27272a)` }
   }
-
   const colors = genres.slice(0, 3).map((g) => genreHex[g] || defaultHex)
-
-  if (colors.length === 1) {
-    return { background: `linear-gradient(to right, ${colors[0]}, ${colors[0]}99)` }
-  }
-  if (colors.length === 2) {
-    return { background: `linear-gradient(to right, ${colors[0]}, ${colors[1]})` }
-  }
+  if (colors.length === 1) return { background: `linear-gradient(to right, ${colors[0]}, ${colors[0]}99)` }
+  if (colors.length === 2) return { background: `linear-gradient(to right, ${colors[0]}, ${colors[1]})` }
   return { background: `linear-gradient(to right, ${colors[0]}, ${colors[1]}, ${colors[2]})` }
 }
 
+const LOCK_MSG = "🔒 Only Crazy Level Cinephile could do this..."
+
 function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex = 0 }) {
   const { isAdmin } = useAdmin()
+
   const handleDelete = async (e) => {
     e.stopPropagation()
+    if (!isAdmin) { alert(LOCK_MSG); return }
     const confirmed = window.confirm(`Delete "${movie.title}"?`)
     if (!confirmed) return
     try {
@@ -61,6 +58,7 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
 
   const handleStatusToggle = async (e) => {
     e.stopPropagation()
+    if (!isAdmin) { alert(LOCK_MSG); return }
     try {
       const updates = movie.watched
         ? { watched: false, watchlist: true }
@@ -81,7 +79,6 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
       className="card-animate group flex flex-col cursor-pointer overflow-hidden rounded-xl border-x border-b border-zinc-800 bg-gradient-to-b from-zinc-900 to-black transition-all duration-300 hover:-translate-y-2 hover:border-zinc-600 hover:shadow-card-glow"
       style={{ animationDelay: delay }}
     >
-      {/* TOP ACCENT — inline gradient blending all genre colors */}
       <div className="h-1 w-full" style={getAccentStyle(movie.genre)} />
 
       <div className="flex flex-col flex-1 p-4">
@@ -97,7 +94,7 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
         </div>
 
         {/* TITLE */}
-        <h2 className="line-clamp-2 text-xl font-bold uppercase leading-[1] tracking-[-0.04em] text-white transition-colors duration-200 group-hover:text-amber-300 mb-3">
+        <h2 className="line-clamp-2 text-base sm:text-xl font-bold uppercase leading-[1] tracking-[-0.04em] text-white transition-colors duration-200 group-hover:text-amber-300 mb-3">
           {movie.title}
         </h2>
 
@@ -121,15 +118,15 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
           <span className="rounded bg-amber-400 px-2 py-[3px] text-[10px] font-black uppercase tracking-wide text-black">
             IMDb
           </span>
-          <span className="text-base font-semibold text-white">
+          <span className="text-sm sm:text-base font-semibold text-white">
             {movie.imdbRating ?? '-'}
           </span>
           <span className="text-xs text-zinc-600">/10</span>
         </div>
 
-        {/* VERDICT — only show on watched */}
+        {/* VERDICT — only on watched */}
         {movie.watched && (
-          <div className="text-xs uppercase tracking-[0.14em] text-zinc-500 mb-3">
+          <div className="text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-[0.14em] text-zinc-500 mb-3">
             My Verdict:{' '}
             <span className="font-semibold text-zinc-300">
               {movie.personalRating || 'None'}
@@ -138,29 +135,34 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
         )}
 
         {/* ACTORS */}
-        <p className="line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed tracking-[0.04em] text-zinc-500 mb-3">
+        <p className="line-clamp-2 min-h-[2.5rem] text-[10px] sm:text-xs leading-relaxed tracking-[0.02em] sm:tracking-[0.04em] text-zinc-500 mb-3">
           {(movie.actors || []).join(', ') || 'No actors added'}
         </p>
 
-        {/* ACTIONS + STATUS — status sits directly above buttons, no floating gap */}
-        {isAdmin && 
-          <div className="mt-auto space-y-2">
-          
+        {/* ACTIONS — always visible, locked for non-admins */}
+        <div className="mt-auto space-y-2">
           <button
             onClick={handleStatusToggle}
-            className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-400 transition-all duration-200 hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-[0.97]"
+            className={`w-full rounded-lg border px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.10em] sm:tracking-[0.14em] transition-all duration-200 active:scale-[0.97] ${
+              isAdmin
+                ? 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:text-emerald-300'
+                : 'border-zinc-800/50 bg-zinc-900/50 text-zinc-600 cursor-not-allowed'
+            }`}
           >
             {movie.watched ? 'Rewatch' : 'Mark as Watched'}
           </button>
 
           <button
             onClick={handleDelete}
-            className="w-full rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-red-300 transition-all duration-200 hover:bg-red-500 hover:text-white active:scale-[0.97]"
+            className={`w-full rounded-lg border px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.10em] sm:tracking-[0.14em] transition-all duration-200 active:scale-[0.97] ${
+              isAdmin
+                ? 'border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500 hover:text-white'
+                : 'border-zinc-800/50 bg-zinc-900/50 text-zinc-600 cursor-not-allowed'
+            }`}
           >
             Delete
           </button>
         </div>
-        }
       </div>
     </article>
   )

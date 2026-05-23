@@ -13,7 +13,7 @@ function MovieGrid({ movies, onDelete, onStatusChange, onSelect }) {
   }
 
   return (
-    <section className="grid gap-3 grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-4"
+    <section className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-4"
 >
       {movies.map((movie, index) => (
         <MovieCard

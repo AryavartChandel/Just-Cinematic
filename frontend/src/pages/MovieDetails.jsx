@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { getDetails } from '../services/tmdbService'
 import { getMovies, updateMovie } from '../services/movieService'
+import { useAdmin } from '../context/AdminContext'
 
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original'
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w500'
+const LOCK_MSG = '🔒 Powers like this cannot be wielded by the weak...you'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -23,6 +25,7 @@ const VERDICTS = [
 ]
 
 function MovieDetails({ tmdbId, type = 'movie', onClose }) {
+  const { isAdmin } = useAdmin()
   const [movie, setMovie] = useState(null)
   const [loading, setLoading] = useState(true)
   const [dbMovie, setDbMovie] = useState(null)
@@ -31,7 +34,6 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
   const [personalRating, setPersonalRating] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-
   const [watchedMonth, setWatchedMonth] = useState('')
   const [watchedYear, setWatchedYear] = useState('')
 
@@ -77,18 +79,16 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
   }, [onClose])
 
   const handleSave = async () => {
+    if (!isAdmin) { alert(LOCK_MSG); return }
     if (!dbMovie) return
     try {
       setSaving(true)
-
       const payload = { review, notes, personalRating }
-
       if (watchedYear !== '' && watchedMonth !== '') {
         payload.watchedAt = new Date(Number(watchedYear), Number(watchedMonth), 1).toISOString()
       } else if (watchedYear !== '') {
         payload.watchedAt = new Date(Number(watchedYear), 0, 1).toISOString()
       }
-
       await updateMovie(dbMovie._id, payload)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -98,6 +98,11 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleVerdictClick = (label) => {
+    if (!isAdmin) { alert(LOCK_MSG); return }
+    setPersonalRating(personalRating === label ? '' : label)
   }
 
   const trailer = movie?.videos?.results?.find(
@@ -201,12 +206,17 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                 {/* OVERVIEW */}
                 <p className="leading-relaxed text-zinc-300">{movie.overview}</p>
 
-                {/* PERSONAL NOTES */}
+                {/* PERSONAL NOTES — watched movies only */}
                 {dbMovie && dbMovie.watched ? (
                   <div className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-                    <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">My Notes</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">My Notes</p>
+                      {!isAdmin && (
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600">🔒 This tale was written beyond your reach, my friend</p>
+                      )}
+                    </div>
 
-                    {/* VERDICT + WATCHED ON — side by side */}
+                    {/* VERDICT + WATCHED ON */}
                     <div className="flex items-start justify-between gap-4">
 
                       {/* VERDICT LEFT */}
@@ -217,11 +227,11 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                             <button
                               key={label}
                               type="button"
-                              onClick={() => setPersonalRating(personalRating === label ? '' : label)}
+                              onClick={() => handleVerdictClick(label)}
                               className={`rounded-lg border px-4 py-2 text-xs font-bold uppercase tracking-wide transition-all duration-150 ${
                                 personalRating === label
                                   ? `${active} scale-105`
-                                  : inactive
+                                  : isAdmin ? inactive : 'border-zinc-800 bg-zinc-900 text-zinc-600 cursor-not-allowed'
                               }`}
                             >
                               {label}
@@ -236,8 +246,8 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                         <div className="flex gap-1.5">
                           <select
                             value={watchedMonth}
-                            onChange={(e) => setWatchedMonth(e.target.value)}
-                            className="h-8 rounded-lg border border-zinc-800 bg-zinc-950 px-2 text-xs text-white outline-none transition focus:border-amber-400"
+                            onChange={(e) => isAdmin ? setWatchedMonth(e.target.value) : alert(LOCK_MSG)}
+                            className={`h-8 rounded-lg border border-zinc-800 bg-zinc-950 px-2 text-xs text-white outline-none transition focus:border-amber-400 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             <option value="">Month</option>
                             {MONTHS.map((m, i) => (
@@ -246,8 +256,8 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                           </select>
                           <select
                             value={watchedYear}
-                            onChange={(e) => setWatchedYear(e.target.value)}
-                            className="h-8 w-24 rounded-lg border border-zinc-800 bg-zinc-950 px-2 text-xs text-white outline-none transition focus:border-amber-400"
+                            onChange={(e) => isAdmin ? setWatchedYear(e.target.value) : alert(LOCK_MSG)}
+                            className={`h-8 w-24 rounded-lg border border-zinc-800 bg-zinc-950 px-2 text-xs text-white outline-none transition focus:border-amber-400 ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             <option value="">Year</option>
                             {YEARS.filter((y) => y >= 2003).map((y) => (
@@ -265,9 +275,10 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                       <textarea
                         value={review}
                         onChange={(e) => setReview(e.target.value)}
-                        placeholder="What did you think? Write your review..."
+                        readOnly={!isAdmin}
+                        placeholder={isAdmin ? 'What did you think? Write your review...' : 'No review yet.'}
                         rows={4}
-                        className="w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-white outline-none transition placeholder:text-zinc-700 focus:border-amber-400"
+                        className={`w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-white outline-none transition placeholder:text-zinc-700 focus:border-amber-400 ${!isAdmin ? 'opacity-60 cursor-default' : ''}`}
                       />
                     </div>
 
@@ -277,22 +288,26 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                       <textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Quotes, observations, things to remember..."
+                        readOnly={!isAdmin}
+                        placeholder={isAdmin ? 'Quotes, observations, things to remember...' : 'No notes yet.'}
                         rows={2}
-                        className="w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-white outline-none transition placeholder:text-zinc-700 focus:border-amber-400"
+                        className={`w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-white outline-none transition placeholder:text-zinc-700 focus:border-amber-400 ${!isAdmin ? 'opacity-60 cursor-default' : ''}`}
                       />
                     </div>
 
+                    {/* SAVE BUTTON */}
                     <button
                       onClick={handleSave}
                       disabled={saving}
                       className={`rounded-xl px-6 py-2.5 text-xs font-bold uppercase tracking-[0.2em] transition ${
                         saved
                           ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-amber-400 text-black hover:bg-amber-300'
+                          : isAdmin
+                            ? 'bg-amber-400 text-black hover:bg-amber-300'
+                            : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
                       }`}
                     >
-                      {saving ? 'Saving...' : saved ? '✓ Saved' : 'Save Notes'}
+                      {saving ? 'Saving...' : saved ? '✓ Saved' : isAdmin ? 'Save Notes' : '🔒 Save Notes'}
                     </button>
                   </div>
                 ) : null}

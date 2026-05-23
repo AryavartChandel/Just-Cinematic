@@ -40,7 +40,7 @@ export function AdminProvider({ children }) {
           >
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Are u an OG Cinephile?</p>
-              <h2 className="mt-1 text-xl font-black text-white">Aryavart Level Access</h2>
+              <h2 className="mt-1 text-l font-black text-white">Aryavart Level Access Chahiye?</h2>
             </div>
 
             <input
@@ -56,7 +56,7 @@ export function AdminProvider({ children }) {
             />
 
             {error && (
-              <p className="text-xs text-red-400">Wrong password. Try again.</p>
+              <p className="text-xs text-red-400">Betaa, tumse naa hopayga..</p>
             )}
 
             <button
