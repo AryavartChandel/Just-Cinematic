@@ -1,5 +1,6 @@
 import { deleteMovie, toggleWatchStatus } from '../services/movieService'
 import { genreColors, defaultGenreTheme } from '../utils/genreColors'
+import { useAdmin } from '../context/AdminContext'
 
 // Hex colors for each genre — used for inline gradient styles
 const genreHex = {
@@ -9,10 +10,10 @@ const genreHex = {
   Comedy:             '#facc15',
   Crime:              '#64748b',
   Documentary:        '#38bdf8',
-  Drama:              '#f59e0b',
-  Family:             '#fb923c',
+  Drama:              '#f1b347',
+  Family:             '#bafc88',
   Fantasy:            '#8b5cf6',
-  History:            '#a8a29e',
+  History:            '#dba27b',
   Horror:             '#991b1b',
   Music:              '#fb7185',
   Mystery:            '#7c3aed',
@@ -44,6 +45,7 @@ const getAccentStyle = (genres) => {
 }
 
 function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex = 0 }) {
+  const { isAdmin } = useAdmin()
   const handleDelete = async (e) => {
     e.stopPropagation()
     const confirmed = window.confirm(`Delete "${movie.title}"?`)
@@ -141,7 +143,8 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
         </p>
 
         {/* ACTIONS + STATUS — status sits directly above buttons, no floating gap */}
-        <div className="mt-auto space-y-2">
+        {isAdmin && 
+          <div className="mt-auto space-y-2">
           
           <button
             onClick={handleStatusToggle}
@@ -157,6 +160,7 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
             Delete
           </button>
         </div>
+        }
       </div>
     </article>
   )

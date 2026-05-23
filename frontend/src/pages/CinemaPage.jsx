@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAdmin } from '../context/AdminContext'
 
 import AddMovieForm from '../components/AddMovieForm'
 import FilterBar from '../components/FilterBar'
@@ -13,6 +14,7 @@ import { genreColors, defaultGenreTheme } from '../utils/genreColors'
 
 function CinemaPage({ mode = 'watchlist' }) {
   const navigate = useNavigate()
+  const { isAdmin } = useAdmin()
   const isWatchlist = mode === 'watchlist'
   const upcomingRef = useRef(null)
 
@@ -141,9 +143,9 @@ function CinemaPage({ mode = 'watchlist' }) {
             {isWatchlist && (
               <button
               onClick={() => setShowAddForm(true)}
-              disabled={!isWatchlist}
+              disabled={!isWatchlist || !isAdmin}
               className={`h-8 rounded-lg bg-amber-400 px-4 text-[10px] font-bold uppercase tracking-[0.12em] text-black transition hover:bg-amber-300 whitespace-nowrap ${
-                isWatchlist ? '' : 'invisible'
+                isWatchlist && isAdmin ? 'bg-amber-400 hover:bg-amber-300' : 'invisible'
               }`}
             >
                 + Add
