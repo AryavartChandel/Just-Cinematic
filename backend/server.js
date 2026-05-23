@@ -4,6 +4,7 @@ require('dotenv').config()
 
 const connectDB = require('./config/db')
 const movieRoutes = require('./routes/movieRoutes')
+const tmdbRoutes = require('./routes/tmdbRoutes')
 
 connectDB()
 
@@ -28,6 +29,7 @@ app.get('/api/health', (req, res) => {
 })
 
 app.use('/api/movies', movieRoutes)
+app.use('/api/tmdb', tmdbRoutes)
 
 const PORT = process.env.PORT || 5000
 
