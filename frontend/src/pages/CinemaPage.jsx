@@ -151,12 +151,13 @@ function CinemaPage({ mode = 'watchlist' }) {
 
             {isWatchlist && (
               <button
-              onClick={() => setShowAddForm(true)}
-              disabled={!isWatchlist || !isAdmin}
-              className={`h-8 rounded-lg bg-amber-400 px-4 text-[10px] font-bold uppercase tracking-[0.12em] text-black transition hover:bg-amber-300 whitespace-nowrap ${
-                isWatchlist && isAdmin ? 'bg-amber-400 hover:bg-amber-300' : 'invisible'
-              }`}
-            >
+                onClick={() => setShowAddForm(true)}
+                className={`h-8 rounded-lg px-4 text-[10px] font-bold uppercase tracking-[0.12em] text-black transition whitespace-nowrap ${
+                  isAdmin
+                    ? 'bg-amber-400 hover:bg-amber-300'
+                    : 'bg-zinc-700 text-zinc-400 cursor-default'
+                }`}
+              >
                 + Add
               </button>
             )}
