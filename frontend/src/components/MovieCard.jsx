@@ -156,7 +156,7 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
             onClick={handleDelete}
             className={`w-full rounded-lg border px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.10em] sm:tracking-[0.14em] transition-all duration-200 active:scale-[0.97] ${
               isAdmin
-                ? 'border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500 hover:text-white'
+                ? 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-300'
                 : 'border-zinc-800/50 bg-zinc-900/50 text-zinc-600 cursor-not-allowed'
             }`}
           >

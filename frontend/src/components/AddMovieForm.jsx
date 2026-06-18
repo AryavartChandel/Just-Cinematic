@@ -16,6 +16,22 @@ import { genreColors, defaultGenreTheme } from '../utils/genreColors'
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
 const LOCK_MSG = '🔒 You are not worthy enough Thor..'
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+const currentYear = new Date().getFullYear()
+const YEARS = Array.from({ length: 40 }, (_, i) => currentYear - i)
+
+const VERDICTS = [
+  { label: 'Masterpiece', active: 'border-amber-400 bg-amber-400/20 text-amber-300', inactive: 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-amber-400/50 hover:text-amber-400' },
+  { label: 'Great',       active: 'border-emerald-400 bg-emerald-400/20 text-emerald-300', inactive: 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-emerald-400/50 hover:text-emerald-400' },
+  { label: 'Good',        active: 'border-sky-400 bg-sky-400/20 text-sky-300', inactive: 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-sky-400/50 hover:text-sky-400' },
+  { label: 'Timepass',    active: 'border-orange-400 bg-orange-400/20 text-orange-300', inactive: 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-orange-400/50 hover:text-orange-400' },
+  { label: 'Skip',        active: 'border-red-400 bg-red-400/20 text-red-300', inactive: 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-red-400/50 hover:text-red-400' },
+]
+
 const initialForm = {
   tmdbId: '',
   title: '',
@@ -37,6 +53,8 @@ function AddMovieForm({ onMovieAdded }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [selectedItem, setSelectedItem] = useState(false)
+  const [watchedMonth, setWatchedMonth] = useState('')
+  const [watchedYear, setWatchedYear] = useState('')
 
   const isMovie = form.type === 'movie'
 
@@ -108,6 +126,8 @@ function AddMovieForm({ onMovieAdded }) {
     setQuery('')
     setResults([])
     setSelectedItem(false)
+    setWatchedMonth('')
+    setWatchedYear('')
   }
 
   const handleStatusChange = (status) => {
@@ -115,7 +135,12 @@ function AddMovieForm({ onMovieAdded }) {
       ...prev,
       watched: status === 'watched',
       watchlist: status === 'watchlist',
+      personalRating: status === 'watchlist' ? '' : prev.personalRating,
     }))
+    if (status === 'watchlist') {
+      setWatchedMonth('')
+      setWatchedYear('')
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -123,6 +148,7 @@ function AddMovieForm({ onMovieAdded }) {
     if (!isAdmin) { alert(LOCK_MSG); return }
     try {
       setLoading(true)
+
       const payload = {
         ...form,
         year: form.year ? Number(form.year) : null,
@@ -131,12 +157,24 @@ function AddMovieForm({ onMovieAdded }) {
         genre: form.genre,
         actors: form.actors.split(',').map((a) => a.trim()).filter(Boolean),
       }
+
+      // Set watchedAt if watched and date provided
+      if (form.watched && watchedYear) {
+        payload.watchedAt = new Date(
+          Number(watchedYear),
+          watchedMonth !== '' ? Number(watchedMonth) : 0,
+          1
+        ).toISOString()
+      }
+
       const createdMovie = await createMovie(payload)
       onMovieAdded(createdMovie)
       setForm(initialForm)
       setQuery('')
       setResults([])
       setSelectedItem(false)
+      setWatchedMonth('')
+      setWatchedYear('')
     } catch (error) {
       console.error(error.response?.data || error)
       alert('Failed to add title')
@@ -296,23 +334,8 @@ function AddMovieForm({ onMovieAdded }) {
           placeholder="IMDb Rating"
           value={form.imdbRating}
           onChange={handleChange}
-          className="h-14 rounded-xl border border-zinc-800 bg-black px-5 text-white outline-none transition focus:border-amber-400"
+          className="h-14 rounded-xl border border-zinc-800 bg-black px-5 text-white outline-none transition focus:border-amber-400 md:col-span-2"
         />
-
-        <select
-          name="personalRating"
-          value={form.personalRating}
-          onChange={handleChange}
-          disabled={!form.watched}
-          className="h-14 rounded-xl border border-zinc-800 bg-black px-5 text-white outline-none transition-all duration-300 focus:border-amber-400 disabled:opacity-25 disabled:cursor-not-allowed"
-        >
-          <option value="">Select Your Verdict</option>
-          <option value="Masterpiece">Masterpiece</option>
-          <option value="Great">Great</option>
-          <option value="Good">Good</option>
-          <option value="Timepass">Timepass</option>
-          <option value="Skip">Skip</option>
-        </select>
       </div>
 
       {/* POSTER */}
@@ -348,6 +371,63 @@ function AddMovieForm({ onMovieAdded }) {
           </button>
         </div>
       </div>
+
+      {/* WATCHED ONLY — verdict + watched on, visible only when watched */}
+      {form.watched && (
+        <div className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all">
+
+          {/* VERDICT */}
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">My Verdict</p>
+            <div className="flex flex-wrap gap-2">
+              {VERDICTS.map(({ label, active, inactive }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      personalRating: prev.personalRating === label ? '' : label,
+                    }))
+                  }
+                  className={`rounded-lg border px-4 py-2 text-xs font-bold uppercase tracking-wide transition-all duration-150 ${
+                    form.personalRating === label ? `${active} scale-105` : inactive
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* WATCHED ON */}
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">Watched On</p>
+            <div className="flex gap-2">
+              <select
+                value={watchedMonth}
+                onChange={(e) => setWatchedMonth(e.target.value)}
+                className="h-10 flex-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm text-white outline-none transition focus:border-amber-400"
+              >
+                <option value="">Month (optional)</option>
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={i}>{m}</option>
+                ))}
+              </select>
+              <select
+                value={watchedYear}
+                onChange={(e) => setWatchedYear(e.target.value)}
+                className="h-10 w-32 rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm text-white outline-none transition focus:border-amber-400"
+              >
+                <option value="">Year</option>
+                {YEARS.filter((y) => y >= 2003).map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SUBMIT — blocked for non-admins */}
       <button
