@@ -123,13 +123,13 @@ function CinemaPage({ mode = 'watchlist' }) {
               className="h-8 rounded-lg border border-zinc-800 bg-zinc-950 px-2 text-[10px] uppercase tracking-[0.1em] text-zinc-300 outline-none transition focus:border-amber-400"
             >
               <option value="title">A → Z</option>
-              <option value="year">Year</option>
-              <option value="imdbRating">IMDb</option>
+              <option value="year">Release Year</option>
+              <option value="imdbRating">IMDb Rating</option>
               {isWatchlist
                 ? <option value="createdAt">Date Added</option>
                 : <option value="watchedAt">Watched On</option>
               }
-              {!isWatchlist && <option value="personalRating">Verdict</option>}
+              {!isWatchlist && <option value="personalRating">My Verdict</option>}
             </select>
               <button
                 onClick={() =>

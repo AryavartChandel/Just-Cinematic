@@ -119,7 +119,7 @@ function MovieCard({ movie, onDelete, onStatusChange, onSelect, animationIndex =
             IMDb
           </span>
           <span className="text-sm sm:text-base font-semibold text-white">
-            {movie.imdbRating ?? '-'}
+            {movie.imdbRating ? Number(movie.imdbRating).toFixed(1): '-'}
           </span>
           <span className="text-xs text-zinc-600">/10</span>
         </div>

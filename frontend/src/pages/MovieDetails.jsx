@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { getDetails } from '../services/tmdbService'
 import { getMovies, updateMovie } from '../services/movieService'
@@ -6,7 +6,7 @@ import { useAdmin } from '../context/AdminContext'
 
 const BACKDROP_BASE = 'https://image.tmdb.org/t/p/original'
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w500'
-const LOCK_MSG = '🔒 Powers like this cannot be wielded by the weak...you'
+const LOCK_MSG = '🔒 Unlock admin to edit notes'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -36,6 +36,21 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
   const [saved, setSaved] = useState(false)
   const [watchedMonth, setWatchedMonth] = useState('')
   const [watchedYear, setWatchedYear] = useState('')
+
+  const reviewRef = useRef(null)
+  const notesRef = useRef(null)
+
+  const autoResize = (el) => {
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = el.scrollHeight + 'px'
+  }
+
+  // Auto-resize on content load
+  useEffect(() => {
+    autoResize(reviewRef.current)
+    autoResize(notesRef.current)
+  }, [review, notes])
 
   useEffect(() => {
     const load = async () => {
@@ -212,17 +227,17 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-500">My Notes</p>
                       {!isAdmin && (
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600"> </p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600">🔒 Read only</p>
                       )}
                     </div>
 
                     {/* VERDICT + WATCHED ON */}
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex items-start justify-between gap-4">
 
-                      {/* VERDICT */}
+                      {/* VERDICT LEFT */}
                       <div className="space-y-1.5">
                         <label className="text-xs uppercase tracking-[0.2em] text-zinc-600">My Verdict</label>
-                        <div className="flex flex-row flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2">
                           {VERDICTS.map(({ label, active, inactive }) => (
                             <button
                               key={label}
@@ -241,7 +256,7 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                       </div>
 
                       {/* WATCHED ON RIGHT */}
-                      <div className="space-y-1.5 sm:shrink-0">
+                      <div className="space-y-1.5 shrink-0">
                         <label className="text-xs uppercase tracking-[0.2em] text-zinc-600">Watched On</label>
                         <div className="flex gap-1.5">
                           <select
@@ -273,12 +288,13 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                     <div className="space-y-1.5">
                       <label className="text-xs uppercase tracking-[0.2em] text-zinc-600">Review</label>
                       <textarea
+                        ref={reviewRef}
                         value={review}
-                        onChange={(e) => setReview(e.target.value)}
+                        onChange={(e) => { setReview(e.target.value); autoResize(e.target) }}
                         readOnly={!isAdmin}
                         placeholder={isAdmin ? 'What did you think? Write your review...' : 'No review yet.'}
                         rows={4}
-                        className={`w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-white outline-none transition placeholder:text-zinc-700 focus:border-amber-400 ${!isAdmin ? 'opacity-60 cursor-default' : ''}`}
+                        className={`w-full resize-none overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-white outline-none transition placeholder:text-zinc-700 focus:border-amber-400 ${!isAdmin ? 'opacity-60 cursor-default' : ''}`}
                       />
                     </div>
 
@@ -286,12 +302,13 @@ function MovieDetails({ tmdbId, type = 'movie', onClose }) {
                     <div className="space-y-1.5">
                       <label className="text-xs uppercase tracking-[0.2em] text-zinc-600">Quick Notes</label>
                       <textarea
+                        ref={notesRef}
                         value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
+                        onChange={(e) => { setNotes(e.target.value); autoResize(e.target) }}
                         readOnly={!isAdmin}
                         placeholder={isAdmin ? 'Quotes, observations, things to remember...' : 'No notes yet.'}
                         rows={2}
-                        className={`w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-white outline-none transition placeholder:text-zinc-700 focus:border-amber-400 ${!isAdmin ? 'opacity-60 cursor-default' : ''}`}
+                        className={`w-full resize-none overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm leading-relaxed text-white outline-none transition placeholder:text-zinc-700 focus:border-amber-400 ${!isAdmin ? 'opacity-60 cursor-default' : ''}`}
                       />
                     </div>
 
